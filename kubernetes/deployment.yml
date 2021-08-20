@@ -1,0 +1,228 @@
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: Reservation
+  labels:
+    app: Reservation
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: Reservation
+  template:
+    metadata:
+      labels:
+        app: Reservation
+    spec:
+      containers:
+        - name: Reservation
+          image: username/Reservation:latest
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: '/actuator/health'
+              port: 8080
+            initialDelaySeconds: 10
+            timeoutSeconds: 2
+            periodSeconds: 5
+            failureThreshold: 10
+          livenessProbe:
+            httpGet:
+              path: '/actuator/health'
+              port: 8080
+            initialDelaySeconds: 120
+            timeoutSeconds: 2
+            periodSeconds: 5
+            failureThreshold: 5
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: Pay
+  labels:
+    app: Pay
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: Pay
+  template:
+    metadata:
+      labels:
+        app: Pay
+    spec:
+      containers:
+        - name: Pay
+          image: username/Pay:latest
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: '/actuator/health'
+              port: 8080
+            initialDelaySeconds: 10
+            timeoutSeconds: 2
+            periodSeconds: 5
+            failureThreshold: 10
+          livenessProbe:
+            httpGet:
+              path: '/actuator/health'
+              port: 8080
+            initialDelaySeconds: 120
+            timeoutSeconds: 2
+            periodSeconds: 5
+            failureThreshold: 5
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: Ticket
+  labels:
+    app: Ticket
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: Ticket
+  template:
+    metadata:
+      labels:
+        app: Ticket
+    spec:
+      containers:
+        - name: Ticket
+          image: username/Ticket:latest
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: '/actuator/health'
+              port: 8080
+            initialDelaySeconds: 10
+            timeoutSeconds: 2
+            periodSeconds: 5
+            failureThreshold: 10
+          livenessProbe:
+            httpGet:
+              path: '/actuator/health'
+              port: 8080
+            initialDelaySeconds: 120
+            timeoutSeconds: 2
+            periodSeconds: 5
+            failureThreshold: 5
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: MyReservation
+  labels:
+    app: MyReservation
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: MyReservation
+  template:
+    metadata:
+      labels:
+        app: MyReservation
+    spec:
+      containers:
+        - name: MyReservation
+          image: username/MyReservation:latest
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: '/actuator/health'
+              port: 8080
+            initialDelaySeconds: 10
+            timeoutSeconds: 2
+            periodSeconds: 5
+            failureThreshold: 10
+          livenessProbe:
+            httpGet:
+              path: '/actuator/health'
+              port: 8080
+            initialDelaySeconds: 120
+            timeoutSeconds: 2
+            periodSeconds: 5
+            failureThreshold: 5
+
+
+---
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: Reservation
+  labels:
+    app: Reservation
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+  selector:
+    app: Reservation
+
+
+---
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: Pay
+  labels:
+    app: Pay
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+  selector:
+    app: Pay
+
+
+---
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: Ticket
+  labels:
+    app: Ticket
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+  selector:
+    app: Ticket
+
+
+---
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: MyReservation
+  labels:
+    app: MyReservation
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+  selector:
+    app: MyReservation
+
