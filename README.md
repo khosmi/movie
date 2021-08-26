@@ -20,7 +20,7 @@
 
 # Event Storming 결과
 ![image](https://user-images.githubusercontent.com/86760622/130416307-f2fc6258-6512-4a41-bb9e-787cb997ceae.png)
-![EventStormingV1](https://github.com/bigot93/forthcafe/blob/main/images/eventingstorming_forthcafe.png)
+
 
 # 헥사고날 아키텍처 다이어그램 도출
 ![증빙10](https://github.com/bigot93/forthcafe/blob/main/images/%ED%97%A5%EC%82%AC%EA%B3%A0%EB%82%A0.png)
