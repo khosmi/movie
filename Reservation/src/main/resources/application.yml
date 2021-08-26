@@ -43,6 +43,21 @@ api:
   url:
     pay: http://localhost:8082
 
+
+# circuit breaker 설정 start
+feign:
+  hystrix:
+    enabled: true
+
+hystrix:
+  command:
+    # 전역설정
+    default:
+      #execution.isolation.thread.timeoutInMilliseconds: 610
+      execution.isolation.thread.timeoutInMilliseconds: 30000
+# circuit breaker 설정 end
+
+
 ---
 
 spring:
@@ -68,3 +83,21 @@ spring:
         event-out:
           destination: movie
           contentType: application/json
+
+api:
+  url:
+    pay: http://Pay:8082
+
+
+# circuit breaker 설정 start
+feign:
+  hystrix:
+    enabled: true
+
+hystrix:
+  command:
+    # 전역설정
+    default:
+      #execution.isolation.thread.timeoutInMilliseconds: 610
+      execution.isolation.thread.timeoutInMilliseconds: 30000
+# circuit breaker 설정 end

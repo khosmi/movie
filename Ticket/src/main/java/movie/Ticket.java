@@ -28,6 +28,15 @@ public class Ticket {
         ticketed.publishAfterCommit();
 
     }
+
+    @PostUpdate
+    public void onPostUpdate(){
+        Ticketed ticketed = new Ticketed();
+        BeanUtils.copyProperties(this, ticketed);
+        ticketed.publishAfterCommit();
+
+    }
+
     @PreRemove
     public void onPreRemove(){
         CanceledTicket canceledTicket = new CanceledTicket();

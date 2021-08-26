@@ -9,10 +9,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.util.Date;
 
-@FeignClient(name="Pay", url="${api.url.pay}")  // Pay Service URL 변수화 by khos
+@FeignClient(name="Pay", url="${api.url.pay}", fallback=PayServiceImpl.class)  // Pay Service URL 변수화 by khos
 public interface PayService {
     @RequestMapping(method= RequestMethod.GET, path="/pays")
     public void pay(@RequestBody Pay pay);
+
 
 }
 
