@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: Reservation
+  name: reservation
   labels:
-    app: Reservation
+    app: reservation
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: Reservation
+      app: reservation
   template:
     metadata:
       labels:
-        app: Reservation
+        app: reservation
     spec:
       containers:
-        - name: Reservation
+        - name: reservation
           image: username/Reservation:latest
           ports:
             - containerPort: 8080

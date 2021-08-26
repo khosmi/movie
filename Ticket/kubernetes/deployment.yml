@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: Ticket
+  name: ticket
   labels:
-    app: Ticket
+    app: ticket
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: Ticket
+      app: ticket
   template:
     metadata:
       labels:
-        app: Ticket
+        app: ticket
     spec:
       containers:
-        - name: Ticket
+        - name: ticket
           image: username/Ticket:latest
           ports:
             - containerPort: 8080

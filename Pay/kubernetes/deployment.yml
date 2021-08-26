@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: Pay
+  name: pay
   labels:
-    app: Pay
+    app: pay
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: Pay
+      app: pay
   template:
     metadata:
       labels:
-        app: Pay
+        app: pay
     spec:
       containers:
-        - name: Pay
+        - name: pay
           image: username/Pay:latest
           ports:
             - containerPort: 8080
