@@ -485,11 +485,20 @@ Materialized View를 구현하여, 타 마이크로서비스의 데이터 원본
 
 예약 실행 후 MyReservation 화면
 
-![증빙3](https://github.com/bigot93/forthcafe/blob/main/images/order_pages.png)
+![image](https://user-images.githubusercontent.com/86760622/130897427-0daeaa06-3e32-40c1-86fa-f8f5bc304ad8.png)
 
-주문(OrderCancelled) 취소 후 MyPages 화면
+결제 후 MyReservation 화면
 
-![증빙4](https://github.com/bigot93/forthcafe/blob/main/images/cancel_pages.png)
+![image](https://user-images.githubusercontent.com/86760622/130897551-f2634bd8-4123-411a-9965-b522a4a13964.png)
+
+티켓팅 후 MyReservation 화면
+
+![image](https://user-images.githubusercontent.com/86760622/130897619-0c864297-00c6-48f8-aa0f-4050946db82c.png)
+
+예약취소 후 MyReservation 화면
+
+![image](https://user-images.githubusercontent.com/86760622/130897740-f379f06e-3906-423c-bdb7-21fdb80acceb.png)
+
 
 위와 같이 주문을 하게되면 Order > Pay > Delivery > MyPage로 주문이 Assigned 되고
 
