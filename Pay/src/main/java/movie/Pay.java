@@ -26,7 +26,6 @@ public class Pay {
     public void onPostPersist(){
         Payed payed = new Payed();
         BeanUtils.copyProperties(this, payed);
-        //payed.setStatus("Payed");  // 상태 변경 by khos
         payed.publishAfterCommit();
 
     }
@@ -35,9 +34,7 @@ public class Pay {
     public void onPostUpdate(){
         Payed payed = new Payed();
         BeanUtils.copyProperties(this, payed);
-        //payed.setStatus("Payed");  // 상태 변경 by khos
         payed.publishAfterCommit();
-
     }
 
     @PreRemove
