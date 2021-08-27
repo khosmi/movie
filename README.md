@@ -1271,6 +1271,7 @@ kubectl rollout restart deployment myreservation  -n huijun
             periodSeconds: 5
 ```
 * Pod를 계속 재시작 한다.
+
 ![Liveness](https://user-images.githubusercontent.com/53825723/131075307-5c1d1b88-ab90-47e7-be08-e2db0390d2c1.JPG)
 
 * Pod에 연결이 가능할 경우  
@@ -1286,6 +1287,7 @@ kubectl rollout restart deployment myreservation  -n huijun
 ```
 
 * Pod가 정상적으로 띄워진다.
+
 ![Liveness성공](https://user-images.githubusercontent.com/53825723/131075311-d00cabb0-e30e-4311-8fbf-d731efe307c5.JPG)
 
 * Liveness 설정이 안되어 있는 경우 Pod의 상태는 Running 이지만 연결이 불가능 할 수 있다.
