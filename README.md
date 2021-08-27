@@ -849,7 +849,7 @@ kubectl apply -f kubernetes
 
 ```
 * Service, Pod, Deploy 상태 확인
-```
+
 ![image](https://user-images.githubusercontent.com/86760528/131059867-8d387dc1-bac2-4d68-972b-1cc1d0629d78.png)
 
 
