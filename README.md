@@ -23,7 +23,7 @@
 
 
 # 헥사고날 아키텍처 다이어그램 도출
-![증빙10](https://github.com/bigot93/forthcafe/blob/main/images/%ED%97%A5%EC%82%AC%EA%B3%A0%EB%82%A0.png)
+![image](https://user-images.githubusercontent.com/86760613/131060623-ad62a938-b703-43d6-b23e-f6f6a317e942.png)
 
 # 구현
 분석/설계 단계에서 도출된 헥사고날 아키텍처에 따라, 구현한 각 서비스를 로컬에서 실행하는 방법은 아래와 같다. (각각의 포트넘버는 8080 ~ 8084이다)
@@ -629,7 +629,8 @@ spring:
 
 
 # CQRS/saga/correlation
-Materialized View를 구현하여, 타 마이크로서비스의 데이터 원본에 접근없이(Composite 서비스나 조인SQL 등 없이)도 내 서비스의 화면 구성과 잦은 조회가 가능하게 구현해 두었다. 본 프로젝트에서 View 역할은 MyPages 서비스가 수행한다.
+Materialized View를 구현하여, 타 마이크로서비스의 데이터 원본에 접근없이(Composite 서비스나 조인SQL 등 없이)도 내 서비스의 화면 구성과 잦은 조회가 가능하게 구현해 두었다. 
+본 프로젝트에서 View 역할은 MyReservation 서비스가 수행한다.
 
 예약 실행 후 MyReservation 화면
 
@@ -648,16 +649,16 @@ Materialized View를 구현하여, 타 마이크로서비스의 데이터 원본
 ![image](https://user-images.githubusercontent.com/86760622/130897740-f379f06e-3906-423c-bdb7-21fdb80acceb.png)
 
 
-위와 같이 주문을 하게되면 Order > Pay > Delivery > MyPage로 주문이 Assigned 되고
+위와 같이 예약을 하게되면 Reservation > Pay > Ticket > MyReservation로 예약이 Assigned 되고
 
-주문 취소가 되면 Status가 deliveryCancelled로 Update 되는 것을 볼 수 있다.
+예약 취소가 되면 Status가 Cancelled Reservation로 Update 되는 것을 볼 수 있다.
 
-또한 Correlation을 Key를 활용하여 Id를 Key값을 하고 원하는 주문하고 서비스간의 공유가 이루어 졌다.
+또한 Correlation을 Key를 활용하여 Id를 Key값을 하고 원하는 예약하고 서비스간의 공유가 이루어 졌다.
 
 위 결과로 서로 다른 마이크로 서비스 간에 트랜잭션이 묶여 있음을 알 수 있다.
 
 # 폴리글랏
-Order 서비스의 DB와 MyPage의 DB를 다른 DB를 사용하여 폴리글랏을 만족시키고 있다.
+Reservation 서비스의 DB와 MyReservation의 DB를 다른 DB를 사용하여 폴리글랏을 만족시키고 있다.
 
 **Reservation의 pom.xml DB 설정 코드**
 
@@ -670,49 +671,104 @@ Order 서비스의 DB와 MyPage의 DB를 다른 DB를 사용하여 폴리글랏�
 
 # 동기식 호출 과 Fallback 처리
 
-분석단계에서의 조건 중 하나로 결재(Pay)와 배송(Delivery) 간의 호출은 동기식 일관성을 유지하는 트랜잭션으로 처리하기로 하였다. 호출 프로토콜은 Rest Repository에 의해 노출되어있는 REST 서비스를 FeignClient를 이용하여 호출하도록 한다.
+분석단계에서의 조건 중 하나로 예약(Reservation)와 결제(Pay)간의 호출은 동기식 일관성을 유지하는 트랜잭션으로 처리하기로 하였다. 
+호출 프로토콜은 Rest Repository에 의해 노출되어있는 REST 서비스를 FeignClient를 이용하여 호출하도록 한다.
 
-**Pay 서비스 내 external.DeliveryService**
+**Reservation 서비스 내 external.PayService.java**
 ```java
-package forthcafe.external;
+package movie.external;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.util.Date;
 
-@FeignClient(name="Delivery", url="${api.url.delivery}") 
-public interface DeliveryService {
-
-    @RequestMapping(method = RequestMethod.POST, path = "/deliveries", consumes = "application/json")
-    public void delivery(@RequestBody Delivery delivery);
+@FeignClient(name="Pay", url="${api.url.pay}")  // Pay Service URL 변수화 
+public interface PayService {
+    @RequestMapping(method= RequestMethod.GET, path="/pays")
+    public void pay(@RequestBody Pay pay);
 
 }
+
 ```
 
 **동작 확인**
 
-잠시 Delivery 서비스 중지
-![증빙7](https://github.com/bigot93/forthcafe/blob/main/images/%EB%8F%99%EA%B8%B0%ED%99%941.png)
-
-주문 취소 요청시 Pay 서비스 변화 없음
-![증빙8](https://github.com/bigot93/forthcafe/blob/main/images/%EB%8F%99%EA%B8%B0%ED%99%942.png)
-
-Delivery 서비스 재기동 후 주문취소
-![증빙9](https://github.com/bigot93/forthcafe/blob/main/images/%EB%8F%99%EA%B8%B0%ED%99%943.png)
-
-Pay 서비스 상태를 보면 2번 주문 정상 취소 처리됨
-![증빙9](https://github.com/bigot93/forthcafe/blob/main/images/%EB%8F%99%EA%B8%B0%ED%99%944.png)
-
-Fallback 설정
-![image](https://user-images.githubusercontent.com/5147735/109755775-f9b7ae80-7c29-11eb-8add-bdb295dc94e1.png)
-![image](https://user-images.githubusercontent.com/5147735/109755797-04724380-7c2a-11eb-8fcd-1c5135000ee5.png)
+Pay 서비스 중지함
+![image](https://user-images.githubusercontent.com/86760622/131061678-fec8d91c-e3a8-413b-960b-9f904c5f604c.png)
 
 
-Fallback 결과(Pay service 종료 후 Order 추가 시)
-![image](https://user-images.githubusercontent.com/5147735/109755716-dab91c80-7c29-11eb-9099-ba585115a2a6.png)
+예약시 Pay서비스 중지로 인해 예약 실패
+![image](https://user-images.githubusercontent.com/86760622/131061604-77f5654c-23e4-4414-9224-d9e439ae3a32.png)
+
+
+Pay 서비스 재기동 후 예약 성공함
+![image](https://user-images.githubusercontent.com/86760622/131062000-cdcbb6b1-790c-4809-9ba9-d995202b45ff.png)
+
+
+Pay 서비스 조회시 정상적으로 예약정보가 등록됨
+
+![image](https://user-images.githubusercontent.com/86760622/131062120-8f310731-85b6-46c0-bdd6-caa6a22e2b09.png)
+
+Fallback 설정 
+- external.PayService.java
+```java
+
+package movie.external;
+
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+import java.util.Date;
+
+//@FeignClient(name="Pay", url="${api.url.pay}")  // Pay Service URL 변수화 
+@FeignClient(name="Pay", url="${api.url.pay}", fallback=PayServiceImpl.class)  // FALLBAK 설정
+public interface PayService {
+    @RequestMapping(method= RequestMethod.GET, path="/pays")
+    public void pay(@RequestBody Pay pay);
+
+}
+
+```
+- external.PayServiceImpl.java
+```java
+package movie.external;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.Optional;
+
+
+@Service
+public class PayServiceImpl implements PayService {
+    
+    public void pay(Pay pay) {
+        System.out.println("@@@@@@@결제 서비스 지연중 입니다. @@@@@@@@@@@@");
+        System.out.println("@@@@@@@결제 서비스 지연중 입니다. @@@@@@@@@@@@");
+        System.out.println("@@@@@@@결제 서비스 지연중 입니다. @@@@@@@@@@@@");
+        System.out.println("@@@@@@@결제 서비스 지연중 입니다. @@@@@@@@@@@@");
+        System.out.println("@@@@@@@결제 서비스 지연중 입니다. @@@@@@@@@@@@");
+        System.out.println("@@@@@@@결제 서비스 지연중 입니다. @@@@@@@@@@@@");
+        System.out.println("@@@@@@@결제 서비스 지연중 입니다. @@@@@@@@@@@@");
+        System.out.println("@@@@@@@결제 서비스 지연중 입니다. @@@@@@@@@@@@");
+        System.out.println("@@@@@@@결제 서비스 지연중 입니다. @@@@@@@@@@@@");
+
+    }
+
+}
+
+
+```
+
+Fallback 결과(Pay service 종료 후 예약실행 추가 시)
+![image](https://user-images.githubusercontent.com/86760622/131062766-99148589-21f6-4817-8fdd-331620f49e40.png)
 
 # 운영
 
@@ -741,7 +797,7 @@ kubectl get po -n kafka -o wide
 ```
 * Topic 생성
 ```
-kubectl -n kafka exec my-kafka-0 -- /usr/bin/kafka-topics --zookeeper my-kafka-zookeeper:2181 --topic forthcafe --create --partitions 1 --replication-factor 1
+kubectl -n kafka exec my-kafka-0 -- /usr/bin/kafka-topics --zookeeper my-kafka-zookeeper:2181 --topic movie --create --partitions 1 --replication-factor 1
 ```
 * Topic 확인
 ```
@@ -749,141 +805,153 @@ kubectl -n kafka exec my-kafka-0 -- /usr/bin/kafka-topics --zookeeper my-kafka-z
 ```
 * 이벤트 발행하기
 ```
-kubectl -n kafka exec -ti my-kafka-0 -- /usr/bin/kafka-console-producer --broker-list my-kafka:9092 --topic forthcafe
+kubectl -n kafka exec -ti my-kafka-0 -- /usr/bin/kafka-console-producer --broker-list my-kafka:9092 --topic movie
 ```
 * 이벤트 수신하기
 ```
-kubectl -n kafka exec -ti my-kafka-0 -- /usr/bin/kafka-console-consumer --bootstrap-server my-kafka:9092 --topic forthcafe --from-beginning
+kubectl -n kafka exec -ti my-kafka-0 -- /usr/bin/kafka-console-consumer --bootstrap-server my-kafka:9092 --topic movie
 ```
 
 * 소스 가져오기
 ```
-git clone https://github.com/bigot93/forthcafe.git
+git clone https://github.com/khosmi/movie.git
 ```
 
 ## ConfigMap
+* MyReservation을 실행할 때 환경변수 사용하여 활성 프로파일을 설정한다.
+* Dockerfile 변경
+```dockerfile
+FROM openjdk:8u212-jdk-alpine
+COPY target/*SNAPSHOT.jar app.jar
+EXPOSE 8080
+ENTRYPOINT ["java","-Xmx400M","-Djava.security.egd=file:/dev/./urandom","-jar","/app.jar","--spring.profiles.active=${PROFILE}"]
+```
 * deployment.yml 파일에 설정
 ```
-env:
-   - name: SYS_MODE
-     valueFrom:
-       configMapKeyRef:
-         name: systemmode
-         key: sysmode
+          env:
+          - name: PROFILE
+            valueFrom:
+              configMapKeyRef:
+                name: profile-cm
+                key: profile
 ```
-* Configmap 생성, 정보 확인
+* `profile=docker`를 가지는 config map 생성
 ```
-kubectl create configmap systemmode --from-literal=sysmode=PRODUCT
-kubectl get configmap systemmode -o yaml
+kubectl create configmap profile-cm --from-literal=profile=docker
 ```
-![image](https://user-images.githubusercontent.com/5147735/109768817-bb77ba80-7c3c-11eb-8856-7fca5213f5b1.png)
+* ConfigMap 생성 확인
+```
+kubectl get cm profile-cm -o yaml 
+```
+![configmap](https://user-images.githubusercontent.com/53825723/131068300-7691fb19-bed0-4277-b535-1e53e0fcf0a7.JPG)
 
-* order 1건 추가후 로그 확인
+* 다시 배포한다.
 ```
-kubectl logs {pod ID}
+mvn package
+docker build -t user1919.azurecr.io/myreservation .
+docker push user1919.azurecr.io/myreservation
+kubectl apply -f kubernetes
 ```
-![image](https://user-images.githubusercontent.com/5147735/109760887-dc3b1280-7c32-11eb-8284-f4544d7b72b0.png)
 
+* pod의 로그 확인
+```
+kubectl logs myreservation-5fd5475c4d-9bkzd
+```
+![configmapapplication로그](https://user-images.githubusercontent.com/53825723/131068733-3eed09a3-0af2-422a-a77d-67c6312b0647.JPG)
+
+
+* pod의 sh에서 환경변수 확인
+```
+kubectl exec myreservation-5fd5475c4d-9bkzd -it -- sh
+```
+![configmapcontainer로그](https://user-images.githubusercontent.com/53825723/131068737-668acff9-33cc-4716-af9c-23d33af33e0d.JPG)
 
 ## Deploy / Pipeline
 
-* build 하기
+* Azure 레지스트리에 도커 이미지 push, deploy, 서비스생성(yml파일 이용한 deploy)
 ```
-cd /forthcafe
+# 각 마이크로 서비스의 deployment에서 이미지 수정 필요
+# label과 이미지 이름 소문자로 변경 필요
 
-cd Order
-mvn package 
 
-cd ..
 cd Pay
+# jar 파일 생성
 mvn package
-
+# 이미지 빌드
+docker build -t user1919.azurecr.io/pay .
+# acr에 이미지 푸시
+docker push user1919.azurecr.io/pay
+# kubernetes에 service, deployment 배포
+kubectl apply -f kubernetes
+# Pod 재배포 
+# Deployment가 변경되어야 새로운 이미지로 Pod를 실행한다.
+# Deployment가 변경되지 않아도 새로운 Image로 Pod 실행하기 위함
+kubectl rollout restart deployment pay  
 cd ..
-cd Delivery
+
+cd Reservation
+# jar 파일 생성
 mvn package
-
+# 이미지 빌드
+docker build -t user1919.azurecr.io/reservation .
+# acr에 이미지 푸시
+docker push user1919.azurecr.io/reservation
+# kubernetes에 service, deployment 배포
+kubectl apply -f kubernetes
+# Pod 재배포 
+# Deployment가 변경되어야 새로운 이미지로 Pod를 실행한다.
+# Deployment가 변경되지 않아도 새로운 Image로 Pod 실행하기 위함
+kubectl rollout restart deployment reservation  
 cd ..
+
+cd Ticket
+# jar 파일 생성
+mvn package
+# 이미지 빌드
+docker build -t user1919.azurecr.io/ticket .
+# acr에 이미지 푸시
+docker push user1919.azurecr.io/ticket
+# kubernetes에 service, deployment 배포
+kubectl apply -f kubernetes
+# Pod 재배포
+# Deployment가 변경되어야 새로운 이미지로 Pod를 실행한다.
+# Deployment가 변경되지 않아도 새로운 Image로 Pod 실행하기 위함
+kubectl rollout restart deployment ticket  
+cd ..
+
 cd gateway
+# jar 파일 생성
 mvn package
+# 이미지 빌드
+docker build -t user1919.azurecr.io/gateway .
+# acr에 이미지 푸시
+docker push user1919.azurecr.io/gateway
+# kubernetes에 service, deployment 배포
+kubectl create deploy gateway --image=user1919.azurecr.io/gateway   
+kubectl expose deploy gateway --type=LoadBalancer --port=8080 
 
+kubectl rollout restart deployment gateway
 cd ..
-cd MyPage
+
+cd MyReservation
+# jar 파일 생성
 mvn package
-```
-
-* Azure 레지스트리에 도커 이미지 push, deploy, 서비스생성(방법1 : yml파일 이용한 deploy)
-```
-cd .. 
-cd Order
-az acr build --registry skteam01 --image skteam01.azurecr.io/order:v1 .
-kubectl apply -f kubernetes/deployment.yml 
-kubectl expose deploy order --type=ClusterIP --port=8080
-
-cd .. 
-cd Pay
-az acr build --registry skteam01 --image skteam01.azurecr.io/pay:v1 .
-kubectl apply -f kubernetes/deployment.yml 
-kubectl expose deploy pay --type=ClusterIP --port=8080
-
-cd .. 
-cd Delivery
-az acr build --registry skteam01 --image skteam01.azurecr.io/delivery:v1 .
-kubectl apply -f kubernetes/deployment.yml 
-kubectl expose deploy delivery --type=ClusterIP --port=8080
-
-
-cd .. 
-cd MyPage
-az acr build --registry skteam01 --image skteam01.azurecr.io/mypage:v1 .
-kubectl apply -f kubernetes/deployment.yml 
-kubectl expose deploy mypage --type=ClusterIP --port=8080
-
-cd .. 
-cd gateway
-az acr build --registry skteam01 --image skteam01.azurecr.io/gateway:v1 .
-kubectl create deploy gateway --image=skteam01.azurecr.io/gateway:v1
-kubectl expose deploy gateway --type=LoadBalancer --port=8080
-```
-
-
-* Azure 레지스트리에 도커 이미지 push, deploy, 서비스생성(방법2)
-```
+# 이미지 빌드
+docker build -t user1919.azurecr.io/myreservation .
+# acr에 이미지 푸시
+docker push user1919.azurecr.io/myreservation
+# kubernetes에 service, deployment 배포
+kubectl apply -f kubernetes
+# Pod 재배포
+# Deployment가 변경되어야 새로운 이미지로 Pod를 실행한다.
+# Deployment가 변경되지 않아도 새로운 Image로 Pod 실행하기 위함
+kubectl rollout restart deployment myreservation  
 cd ..
-cd Order
-az acr build --registry skteam01 --image skteam01.azurecr.io/order:v1 .
-kubectl create deploy order --image=skteam01.azurecr.io/order:v1
-kubectl expose deploy order --type=ClusterIP --port=8080
 
-cd .. 
-cd Pay
-az acr build --registry skteam01 --image skteam01.azurecr.io/pay:v1 .
-kubectl create deploy pay --image=skteam01.azurecr.io/pay:v1
-kubectl expose deploy pay --type=ClusterIP --port=8080
-
-
-cd .. 
-cd Delivery
-az acr build --registry skteam01 --image skteam01.azurecr.io/delivery:v1 .
-kubectl create deploy delivery --image=skteam01.azurecr.io/delivery:v1
-kubectl expose deploy delivery --type=ClusterIP --port=8080
-
-
-cd .. 
-cd gateway
-az acr build --registry skteam01 --image skteam01.azurecr.io/gateway:v1 .
-kubectl create deploy gateway --image=skteam01.azurecr.io/gateway:v1
-kubectl expose deploy gateway --type=LoadBalancer --port=8080
-
-cd .. 
-cd MyPage
-az acr build --registry skteam01 --image skteam01.azurecr.io/mypage:v1 .
-kubectl create deploy mypage --image=skteam01.azurecr.io/mypage:v1
-kubectl expose deploy mypage --type=ClusterIP --port=8080
-
-kubectl logs {pod명}
 ```
 * Service, Pod, Deploy 상태 확인
-![image](https://user-images.githubusercontent.com/5147735/109769165-2de89a80-7c3d-11eb-8472-2281468fb771.png)
+
+![image](https://user-images.githubusercontent.com/86760528/131059867-8d387dc1-bac2-4d68-972b-1cc1d0629d78.png)
 
 
 * deployment.yml  참고
@@ -895,7 +963,38 @@ kubectl logs {pod명}
 5. resource 설정 (autoscaling)
 ```
 
-![image](https://user-images.githubusercontent.com/5147735/109643506-a8f77580-7b97-11eb-926b-e6c922aa2d1b.png)
+![image](https://user-images.githubusercontent.com/86760528/131059850-1c47652c-72d2-413b-9e6d-3733d519c1e5.png)
+
+
+### 수정 반영
+* gateway의 `/acuator/env`는 기본적으로 자단된다.
+```
+http 20.200.200.132:8080/actuator/env
+```
+![변경 전](https://user-images.githubusercontent.com/53825723/131063296-ff43e4f5-2a08-4c29-a53e-78dce60af7ca.JPG)
+
+* application.yaml에서 `/acuator/env`를 허용하도록 수정한다.
+```yaml
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+```
+
+* 스크립트 실핼
+![파이프라인 실행](https://user-images.githubusercontent.com/53825723/131064003-6fb6d07a-1eaa-4e77-a49b-fc4bb4b52b3b.JPG)
+* Pod 확인
+```
+kubectl get pod
+```
+![pod restart](https://user-images.githubusercontent.com/53825723/131063803-f024720c-341a-4dc3-916a-62ffb3a221e9.JPG)
+
+* 수정 내용이 반영되어 `/acuator/env`가 허용된다.
+```
+http 20.200.200.132:8080/actuator/env
+```
+![변경 후](https://user-images.githubusercontent.com/53825723/131063298-e4a1bea1-28ca-4b69-afe4-198302d8c387.JPG)
 
 ## 서킷 브레이킹
 * 서킷 브레이킹 프레임워크의 선택: Spring FeignClient + Hystrix 옵션을 사용하여 구현함
@@ -964,29 +1063,27 @@ siege -c100 -t30S  -v --content-type "application/json" 'http://52.141.61.164:80
 ## 오토스케일 아웃
 * 앞서 서킷 브레이커(CB) 는 시스템을 안정되게 운영할 수 있게 해줬지만 사용자의 요청을 100% 받아들여주지 못했기 때문에 이에 대한 보완책으로 자동화된 확장 기능을 적용하고자 한다.
 
-* order 서비스 deployment.yml 설정
+*  myReservation 서비스 deployment.yml 설정
 ```
- resources:
+        resources:
             limits:
               cpu: 500m
             requests:
               cpu: 200m
 ```
-* 다시 배포해준다.
-```
-/home/project/team/forthcafe/Order/mvn package
-az acr build --registry skteam01 --image skteam01.azurecr.io/order:v1 .
-kubectl apply -f kubernetes/deployment.yml 
-kubectl expose deploy order --type=ClusterIP --port=8080
-```
+* 스크립트를 실행하여 다시 배포해준다.
 
 * Order 서비스에 대한 replica 를 동적으로 늘려주도록 HPA 를 설정한다. 설정은 CPU 사용량이 15프로를 넘어서면 replica 를 10개까지 늘려준다
 
 ```
-kubectl autoscale deploy order --min=1 --max=10 --cpu-percent=15
+kubectl autoscale deployment myreservation --cpu-percent=15 --min=1 --max=10
 ```
+```
+kubectl get hpa
+```
+![hpa적용확인](https://user-images.githubusercontent.com/53825723/131067613-81203ccb-1325-4af8-bcc3-aeea62990a70.JPG)
 
-* /home/project/team/forthcafe/yaml/siege.yaml
+* siege.yaml
 ```
 apiVersion: v1
 kind: Pod
@@ -1000,27 +1097,35 @@ spec:
 
 * siege pod 생성
 ```
-/home/project/team/forthcafe/yaml/kubectl apply -f siege.yaml
+kubectl apply -f siege.yaml
 ```
+
 
 * siege를 활용해서 워크로드를 1000명, 1분간 걸어준다. (Cloud 내 siege pod에서 부하줄 것)
 ```
 kubectl exec -it pod/siege -c siege -- /bin/bash
-siege -c1000 -t60S  -v --content-type "application/json" 'http://{EXTERNAL-IP}:8080/orders POST {"memuId":2, "quantity":1}'
-siege -c1000 -t60S  -v --content-type "application/json" 'http://52.141.61.164:8080/orders POST {"memuId":2, "quantity":1}'
+siege -c1000 -t60S  -v http://myreservation:8080/myReservations
 ```
 
 * 오토스케일이 어떻게 되고 있는지 모니터링을 걸어둔다
 ```
-kubectl get deploy order -w
+kubectl get deploy myreservation -w
 ```
-![image](https://user-images.githubusercontent.com/5147735/109771563-4c9c6080-7c40-11eb-9bf8-1efef17bedee.png)
+![hpaDelploy수변경전](https://user-images.githubusercontent.com/53825723/131067624-43570d7e-354a-43fe-871b-cc7a8604b1b7.JPG)
 ```
-kubectl get pod
+ watch kubectl get pod
 ```
-![image](https://user-images.githubusercontent.com/5147735/109771259-f3ccc800-7c3f-11eb-8ebe-9ff4ab9c2242.png)
+![hpaPod수변경전](https://user-images.githubusercontent.com/53825723/131067628-d6870772-3008-4dde-80ec-2c471e29eb2d.JPG)
 
-
+* 오토스케일 결과
+```
+kubectl get deploy myreservation -w
+```
+![hpaDelploy수변경후](https://user-images.githubusercontent.com/53825723/131067792-e708da59-817b-4d6c-b27f-e7b0e2b26d1a.JPG)
+```
+ watch kubectl get pod
+```
+![hpaPod수변경후](https://user-images.githubusercontent.com/53825723/131067798-ceb2bd23-69e5-4d2f-835d-c8e80fc2bfe3.JPG)
 
 
 ## 무정지 재배포 (Readiness Probe)
