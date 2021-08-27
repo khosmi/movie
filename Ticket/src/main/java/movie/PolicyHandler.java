@@ -25,7 +25,7 @@ public class PolicyHandler{
         System.out.println("\n\n##### listener Ticket : " + reserved.toJson() + "\n\n");
 
 
-        // Sample Logic // ticket 데이터 저장 by khos
+        // Sample Logic // ticket 데이터 저장 
         Ticket ticket = new Ticket();
         ticket.setMovie(reserved.getMovie());
         //ticket.setPayId(reserved.getId());
@@ -37,7 +37,7 @@ public class PolicyHandler{
         ticket.setUserid(reserved.getUserid());
         ticketRepository.save(ticket);
 
-        // ticket 데이터 저장 by khos
+        // ticket 데이터 저장 
     }
 
 
@@ -60,25 +60,7 @@ public class PolicyHandler{
             e.printStackTrace();
         }
     }
-    /* 예약 취소시 동시에 취소로 제외
-    @StreamListener(KafkaProcessor.INPUT)
-    public void wheneverCanceledPay_CancelTicket(@Payload CanceledPay canceledPay){
 
-        if(!canceledPay.validate()) return;
-
-        System.out.println("\n\n##### listener CancelTicket : " + canceledPay.toJson() + "\n\n");
-
-
-
-        // Sample Logic //
-         Ticket ticket = new Ticket();
-         ticket.setPayId(canceledPay.getId());   // 예약ID 설정 by khos
-         ticket.setStatus("Canceled ticket");                   // 상태 변경 by khos
-         //ticketRepository.save(ticket);
-         ticketRepository.delete(ticket);
-
-    }
-    */
 
     @StreamListener(KafkaProcessor.INPUT)
     public void wheneverCanceledPay_CancelTicket(@Payload CanceledReservation canceledReservation){

@@ -18,19 +18,6 @@ public class PolicyHandler{
 
     @StreamListener(KafkaProcessor.INPUT)
     public void wheneverCanceledReservation_CancelPay(@Payload CanceledReservation canceledReservation){
-        /*
-        if(!canceledReservation.validate()) return;
-
-        System.out.println("\n\n##### listener CancelPay : " + canceledReservation.toJson() + "\n\n");
-
-        // Sample Logic //
-         Pay pay = new Pay();
-
-         pay.setReservationId(canceledReservation.getId());   // 예약ID 설정 by khos
-         pay.setStatus("Canceled Payment");                   // 상태 변경 by khos
-         payRepository.save(pay);
-         //payRepository.delete(pay);                         // 삭제 by khos
-         */
 
          try {
             if (!canceledReservation.validate()) return;
