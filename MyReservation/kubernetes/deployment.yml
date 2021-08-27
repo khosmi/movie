@@ -41,3 +41,9 @@ spec:
               cpu: 500m
             requests:
               cpu: 200m
+          env:
+          - name: PROFILE
+            valueFrom:
+              configMapKeyRef:
+                name: profile-cm
+                key: profile        
