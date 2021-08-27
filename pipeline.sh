@@ -11,10 +11,10 @@ docker build -t user1919.azurecr.io/pay .
 docker push user1919.azurecr.io/pay
 # kubernetes에 service, deployment 배포
 kubectl apply -f kubernetes
-# Pod 재배포
+# Pod 재배포 
 # Deployment가 변경되어야 새로운 이미지로 Pod를 실행한다.
 # Deployment가 변경되지 않아도 새로운 Image로 Pod 실행하기 위함
-kubectl rollout restart deployment pay 
+kubectl rollout restart deployment pay  
 cd ..
 
 cd Reservation
@@ -29,7 +29,7 @@ kubectl apply -f kubernetes
 # Pod 재배포 
 # Deployment가 변경되어야 새로운 이미지로 Pod를 실행한다.
 # Deployment가 변경되지 않아도 새로운 Image로 Pod 실행하기 위함
-kubectl rollout restart deployment reservation 
+kubectl rollout restart deployment reservation  
 cd ..
 
 cd Ticket
@@ -44,7 +44,7 @@ kubectl apply -f kubernetes
 # Pod 재배포
 # Deployment가 변경되어야 새로운 이미지로 Pod를 실행한다.
 # Deployment가 변경되지 않아도 새로운 Image로 Pod 실행하기 위함
-kubectl rollout restart deployment ticket 
+kubectl rollout restart deployment ticket  
 cd ..
 
 cd gateway
@@ -55,13 +55,8 @@ docker build -t user1919.azurecr.io/gateway .
 # acr에 이미지 푸시
 docker push user1919.azurecr.io/gateway
 # kubernetes에 service, deployment 배포
-kubectl create deploy gateway --image=user1919.azurecr.io/gateway  
-kubectl expose deploy gateway --type=LoadBalancer --port=8080  
-
-# Pod 재배포
-# Deployment가 변경되어야 새로운 이미지로 Pod를 실행한다.
-# Deployment가 변경되지 않아도 새로운 Image로 Pod 실행하기 위함
-kubectl rollout restart deployment gateway 
+kubectl create deploy gateway --image=user1919.azurecr.io/gateway   
+kubectl expose deploy gateway --type=LoadBalancer --port=8080   
 cd ..
 
 cd MyReservation
@@ -76,5 +71,5 @@ kubectl apply -f kubernetes
 # Pod 재배포
 # Deployment가 변경되어야 새로운 이미지로 Pod를 실행한다.
 # Deployment가 변경되지 않아도 새로운 Image로 Pod 실행하기 위함
-kubectl rollout restart deployment myreservation 
+kubectl rollout restart deployment myreservation  
 cd ..
