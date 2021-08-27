@@ -1243,6 +1243,7 @@ kubectl rollout restart deployment myreservation  -n huijun
 
 
 ## Self-healing (Liveness Probe)
+<!-- 
 * order 서비스 deployment.yml   livenessProbe 설정을 port 8089로 변경 후 배포 하여 liveness probe 가 동작함을 확인 
 ```
     livenessProbe:
@@ -1251,10 +1252,43 @@ kubectl rollout restart deployment myreservation  -n huijun
         port: 8089
       initialDelaySeconds: 5
       periodSeconds: 5
-```
+``` 
 
 ![image](https://user-images.githubusercontent.com/5147735/109740864-4fcb2880-7c0f-11eb-86ad-2aabb0197881.png)
-![image](https://user-images.githubusercontent.com/5147735/109742082-c0734480-7c11-11eb-9a57-f6dd6961a6d2.png)
+![image](https://user-images.githubusercontent.com/5147735/109742082-c0734480-7c11-11eb-9a57-f6dd6961a6d2.png)-->
+
+
+* pod에 연결이 불가능할 경우 
+    * 8090포트로 요청해야 하는 경우 가정
+    * Deployment.yaml
+```yaml
+          livenessProbe:
+            httpGet:
+              path: '/actuator/health'
+              port: 8090
+            initialDelaySeconds: 60
+            timeoutSeconds: 2
+            periodSeconds: 5
+```
+* Pod를 계속 재시작 한다.
+![Liveness](https://user-images.githubusercontent.com/53825723/131075307-5c1d1b88-ab90-47e7-be08-e2db0390d2c1.JPG)
+
+* Pod에 연결이 가능할 경우  
+    * 8080포트로 상태 확인
+```yaml
+          livenessProbe:
+            httpGet:
+              path: '/actuator/health'
+              port: 8080
+            initialDelaySeconds: 60
+            timeoutSeconds: 2
+            periodSeconds: 5
+```
+
+* Pod가 정상적으로 띄워진다.
+![Liveness성공](https://user-images.githubusercontent.com/53825723/131075311-d00cabb0-e30e-4311-8fbf-d731efe307c5.JPG)
+
+* Liveness 설정이 안되어 있는 경우 Pod의 상태는 Running 이지만 연결이 불가능 할 수 있다.
 
 
 
