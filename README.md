@@ -632,21 +632,44 @@ spring:
 Materialized View를 구현하여, 타 마이크로서비스의 데이터 원본에 접근없이(Composite 서비스나 조인SQL 등 없이)도 내 서비스의 화면 구성과 잦은 조회가 가능하게 구현해 두었다. 
 본 프로젝트에서 View 역할은 MyReservation 서비스가 수행한다.
 
-예약 실행 후 MyReservation 화면
+예약 실행 후 Pay, Ticket, MyReservation 화면 - reserved 상태로 예약정보 등록
 
-![image](https://user-images.githubusercontent.com/86760622/130897427-0daeaa06-3e32-40c1-86fa-f8f5bc304ad8.png)
+![image](https://user-images.githubusercontent.com/86760622/131072020-92613585-39b2-423f-abc9-69368fa82eed.png)
 
-결제 후 MyReservation 화면
+![image](https://user-images.githubusercontent.com/86760622/131072063-a30f0933-8cc4-4526-8457-7772ec7da37e.png)
 
-![image](https://user-images.githubusercontent.com/86760622/130897551-f2634bd8-4123-411a-9965-b522a4a13964.png)
+![image](https://user-images.githubusercontent.com/86760622/131072093-75d058e9-6e2f-4e66-a183-734ecbe0b420.png)
+
+![image](https://user-images.githubusercontent.com/86760622/131072108-27b77b3c-9a03-4236-804e-a153e3837a44.png)
+
+![image](https://user-images.githubusercontent.com/86760622/131072127-7c77461c-f778-4006-851b-ab7e6cd08c61.png)
+
+
+결제 후 Ticket, MyReservation 화면 - payed 상태로 변경
+
+![image](https://user-images.githubusercontent.com/86760622/131072212-705a10a2-c3e6-4f6a-9786-de2f4c83cc20.png)
+
+![image](https://user-images.githubusercontent.com/86760622/131072274-f5781b82-35e8-44af-8ec8-5b317cd88fc2.png)
+
+![image](https://user-images.githubusercontent.com/86760622/131072294-a034f344-587f-41e9-b56c-939804afd232.png)
+
 
 티켓팅 후 MyReservation 화면
 
-![image](https://user-images.githubusercontent.com/86760622/130897619-0c864297-00c6-48f8-aa0f-4050946db82c.png)
+![image](https://user-images.githubusercontent.com/86760622/131072360-a72a3598-18a9-47c4-9176-415cda9ef812.png)
 
-예약취소 후 MyReservation 화면
+![image](https://user-images.githubusercontent.com/86760622/131072373-6df6b6d4-7d59-4533-a199-39f697fa1c17.png)
 
-![image](https://user-images.githubusercontent.com/86760622/130897740-f379f06e-3906-423c-bdb7-21fdb80acceb.png)
+
+예약취소 후 Pay, Ticket, MyReservation 화면 - 예약은 삭제되며 각 서비스의 상태가 Canceled Reservation 상태로 변경됨
+
+![image](https://user-images.githubusercontent.com/86760622/131072504-23f52839-b8fc-446b-8769-0bc2be8bf525.png)
+
+![image](https://user-images.githubusercontent.com/86760622/131072520-545e9b28-a3e5-4150-a5f1-08fc31d32425.png)
+
+![image](https://user-images.githubusercontent.com/86760622/131072538-a2888d11-54bc-4d5b-8f87-1cbde344f348.png)
+
+![image](https://user-images.githubusercontent.com/86760622/131072572-b57b3ee6-f198-489f-af8c-c61cd5f3941a.png)
 
 
 위와 같이 예약을 하게되면 Reservation > Pay > Ticket > MyReservation로 예약이 Assigned 되고
