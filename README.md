@@ -1014,7 +1014,7 @@ http 20.200.200.132:8080/actuator/env
 
 ## 서킷 브레이킹
 * 서킷 브레이킹 프레임워크의 선택: Spring FeignClient + Hystrix 옵션을 사용하여 구현함
-* Order -> Pay 와의 Req/Res 연결에서 요청이 과도한 경우 CirCuit Breaker 통한 격리
+* Reservation -> Pay 와의 Req/Res 연결에서 요청이 과도한 경우 CirCuit Breaker 통한 격리
 * Hystrix 를 설정: 요청처리 쓰레드에서 처리시간이 610 밀리가 넘어서기 시작하여 어느정도 유지되면 CB 회로가 닫히도록 (요청을 빠르게 실패처리, 차단) 설정
 
 ```
@@ -1050,7 +1050,7 @@ hystrix:
     }
 ```
 
-* /home/project/team/forthcafe/yaml/siege.yaml
+* siege.yaml
 ```
 apiVersion: v1
 kind: Pod
