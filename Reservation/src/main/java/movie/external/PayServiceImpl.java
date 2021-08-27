@@ -11,6 +11,14 @@ public class PayServiceImpl implements PayService {
     
     public void pay(Pay pay) {
         System.out.println("@@@@@@@결제 서비스 지연중 입니다. @@@@@@@@@@@@");
+        System.out.println("@@@@@@@결제 서비스 지연중 입니다. @@@@@@@@@@@@");
+        System.out.println("@@@@@@@결제 서비스 지연중 입니다. @@@@@@@@@@@@");
+        System.out.println("@@@@@@@결제 서비스 지연중 입니다. @@@@@@@@@@@@");
+        System.out.println("@@@@@@@결제 서비스 지연중 입니다. @@@@@@@@@@@@");
+        System.out.println("@@@@@@@결제 서비스 지연중 입니다. @@@@@@@@@@@@");
+        System.out.println("@@@@@@@결제 서비스 지연중 입니다. @@@@@@@@@@@@");
+        System.out.println("@@@@@@@결제 서비스 지연중 입니다. @@@@@@@@@@@@");
+        System.out.println("@@@@@@@결제 서비스 지연중 입니다. @@@@@@@@@@@@");
 
     }
 
