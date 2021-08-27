@@ -858,7 +858,8 @@ kubectl apply -f kubernetes
 5. resource 설정 (autoscaling)
 ```
 
-![image](https://user-images.githubusercontent.com/5147735/109643506-a8f77580-7b97-11eb-926b-e6c922aa2d1b.png)
+![image](https://user-images.githubusercontent.com/86760528/131059566-0ab5231f-9932-46ec-bc8c-0f3307024602.png)
+
 
 ## 서킷 브레이킹
 * 서킷 브레이킹 프레임워크의 선택: Spring FeignClient + Hystrix 옵션을 사용하여 구현함
