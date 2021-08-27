@@ -835,11 +835,11 @@ ENTRYPOINT ["java","-Xmx400M","-Djava.security.egd=file:/dev/./urandom","-jar","
                 name: profile-cm
                 key: profile
 ```
-- `profile=docker`를 가지는 config map 생성
+* `profile=docker`를 가지는 config map 생성
 ```
 kubectl create configmap profile-cm --from-literal=profile=docker
 ```
-![image](https://user-images.githubusercontent.com/5147735/109768817-bb77ba80-7c3c-11eb-8856-7fca5213f5b1.png)
+* ConfigMap 생성 확인
 ```
 kubectl get cm profile-cm -o yaml 
 ```
