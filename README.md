@@ -840,55 +840,6 @@ kubectl -n kafka exec -ti my-kafka-0 -- /usr/bin/kafka-console-consumer --bootst
 git clone https://github.com/khosmi/movie.git
 ```
 
-## ConfigMap
-* MyReservation을 실행할 때 환경변수 사용하여 활성 프로파일을 설정한다.
-* Dockerfile 변경
-```dockerfile
-FROM openjdk:8u212-jdk-alpine
-COPY target/*SNAPSHOT.jar app.jar
-EXPOSE 8080
-ENTRYPOINT ["java","-Xmx400M","-Djava.security.egd=file:/dev/./urandom","-jar","/app.jar","--spring.profiles.active=${PROFILE}"]
-```
-* deployment.yml 파일에 설정
-```
-          env:
-          - name: PROFILE
-            valueFrom:
-              configMapKeyRef:
-                name: profile-cm
-                key: profile
-```
-* `profile=docker`를 가지는 config map 생성
-```
-kubectl create configmap profile-cm --from-literal=profile=docker
-```
-* ConfigMap 생성 확인
-```
-kubectl get cm profile-cm -o yaml 
-```
-![configmap](https://user-images.githubusercontent.com/53825723/131068300-7691fb19-bed0-4277-b535-1e53e0fcf0a7.JPG)
-
-* 다시 배포한다.
-```
-mvn package
-docker build -t user1919.azurecr.io/myreservation .
-docker push user1919.azurecr.io/myreservation
-kubectl apply -f kubernetes
-```
-
-* pod의 로그 확인
-```
-kubectl logs myreservation-5fd5475c4d-9bkzd
-```
-![configmapapplication로그](https://user-images.githubusercontent.com/53825723/131068733-3eed09a3-0af2-422a-a77d-67c6312b0647.JPG)
-
-
-* pod의 sh에서 환경변수 확인
-```
-kubectl exec myreservation-5fd5475c4d-9bkzd -it -- sh
-```
-![configmapcontainer로그](https://user-images.githubusercontent.com/53825723/131068737-668acff9-33cc-4716-af9c-23d33af33e0d.JPG)
-
 ## Deploy / Pipeline
 
 * Azure 레지스트리에 도커 이미지 push, deploy, 서비스생성(yml파일 이용한 deploy)
@@ -981,37 +932,6 @@ cd ..
 
 ![image](https://user-images.githubusercontent.com/86760528/131059850-1c47652c-72d2-413b-9e6d-3733d519c1e5.png)
 
-
-### 수정 반영
-* gateway의 `/acuator/env`는 기본적으로 자단된다.
-```
-http 20.200.200.132:8080/actuator/env
-```
-![변경 전](https://user-images.githubusercontent.com/53825723/131063296-ff43e4f5-2a08-4c29-a53e-78dce60af7ca.JPG)
-
-* application.yaml에서 `/acuator/env`를 허용하도록 수정한다.
-```yaml
-management:
-  endpoints:
-    web:
-      exposure:
-        include: "*"
-```
-
-* 스크립트 실핼
-![파이프라인 실행](https://user-images.githubusercontent.com/53825723/131064003-6fb6d07a-1eaa-4e77-a49b-fc4bb4b52b3b.JPG)
-* Pod 확인
-```
-kubectl get pod
-```
-![pod restart](https://user-images.githubusercontent.com/53825723/131063803-f024720c-341a-4dc3-916a-62ffb3a221e9.JPG)
-
-* 수정 내용이 반영되어 `/acuator/env`가 허용된다.
-```
-http 20.200.200.132:8080/actuator/env
-```
-![변경 후](https://user-images.githubusercontent.com/53825723/131063298-e4a1bea1-28ca-4b69-afe4-198302d8c387.JPG)
-
 ## 서킷 브레이킹
 * 서킷 브레이킹 프레임워크의 선택: Spring FeignClient + Hystrix 옵션을 사용하여 구현함
 * Reservation -> Pay 와의 Req/Res 연결에서 요청이 과도한 경우 CirCuit Breaker 통한 격리
@@ -1075,6 +995,54 @@ siege -c100 -t30S  -v --content-type "application/json" 'http://52.141.61.164:80
 ![image](https://user-images.githubusercontent.com/86760528/131079671-40199483-9c22-42fc-8fb3-0dbc8a52b183.png)
 ![image](https://user-images.githubusercontent.com/86760528/131079931-b61cd3fa-44ac-42ea-9624-c2fa7b32ff69.png)
 
+## ConfigMap
+* MyReservation을 실행할 때 환경변수 사용하여 활성 프로파일을 설정한다.
+* Dockerfile 변경
+```dockerfile
+FROM openjdk:8u212-jdk-alpine
+COPY target/*SNAPSHOT.jar app.jar
+EXPOSE 8080
+ENTRYPOINT ["java","-Xmx400M","-Djava.security.egd=file:/dev/./urandom","-jar","/app.jar","--spring.profiles.active=${PROFILE}"]
+```
+* deployment.yml 파일에 설정
+```
+          env:
+          - name: PROFILE
+            valueFrom:
+              configMapKeyRef:
+                name: profile-cm
+                key: profile
+```
+* `profile=docker`를 가지는 config map 생성
+```
+kubectl create configmap profile-cm --from-literal=profile=docker
+```
+* ConfigMap 생성 확인
+```
+kubectl get cm profile-cm -o yaml 
+```
+![configmap](https://user-images.githubusercontent.com/53825723/131068300-7691fb19-bed0-4277-b535-1e53e0fcf0a7.JPG)
+
+* 다시 배포한다.
+```
+mvn package
+docker build -t user1919.azurecr.io/myreservation .
+docker push user1919.azurecr.io/myreservation
+kubectl apply -f kubernetes
+```
+
+* pod의 로그 확인
+```
+kubectl logs myreservation-5fd5475c4d-9bkzd
+```
+![configmapapplication로그](https://user-images.githubusercontent.com/53825723/131068733-3eed09a3-0af2-422a-a77d-67c6312b0647.JPG)
+
+
+* pod의 sh에서 환경변수 확인
+```
+kubectl exec myreservation-5fd5475c4d-9bkzd -it -- sh
+```
+![configmapcontainer로그](https://user-images.githubusercontent.com/53825723/131068737-668acff9-33cc-4716-af9c-23d33af33e0d.JPG)
 
 
 ## 오토스케일 아웃
