@@ -818,28 +818,53 @@ git clone https://github.com/khosmi/movie.git
 ```
 
 ## ConfigMap
+* MyReservation을 실행할 때 환경변수 사용하여 활성 프로파일을 설정한다.
+* Dockerfile 변경
+```dockerfile
+FROM openjdk:8u212-jdk-alpine
+COPY target/*SNAPSHOT.jar app.jar
+EXPOSE 8080
+ENTRYPOINT ["java","-Xmx400M","-Djava.security.egd=file:/dev/./urandom","-jar","/app.jar","--spring.profiles.active=${PROFILE}"]
+```
 * deployment.yml 파일에 설정
 ```
-env:
-   - name: SYS_MODE
-     valueFrom:
-       configMapKeyRef:
-         name: systemmode
-         key: sysmode
+          env:
+          - name: PROFILE
+            valueFrom:
+              configMapKeyRef:
+                name: profile-cm
+                key: profile
 ```
-* Configmap 생성, 정보 확인
+- `profile=docker`를 가지는 config map 생성
 ```
-kubectl create configmap systemmode --from-literal=sysmode=PRODUCT
-kubectl get configmap systemmode -o yaml
+kubectl create configmap profile-cm --from-literal=profile=docker
 ```
 ![image](https://user-images.githubusercontent.com/5147735/109768817-bb77ba80-7c3c-11eb-8856-7fca5213f5b1.png)
-
-* order 1건 추가후 로그 확인
 ```
-kubectl logs {pod ID}
+kubectl get cm profile-cm -o yaml 
 ```
-![image](https://user-images.githubusercontent.com/5147735/109760887-dc3b1280-7c32-11eb-8284-f4544d7b72b0.png)
+![configmap](https://user-images.githubusercontent.com/53825723/131068300-7691fb19-bed0-4277-b535-1e53e0fcf0a7.JPG)
 
+* 다시 배포한다.
+```
+mvn package
+docker build -t user1919.azurecr.io/myreservation .
+docker push user1919.azurecr.io/myreservation
+kubectl apply -f kubernetes
+```
+
+* pod의 로그 확인
+```
+kubectl logs myreservation-5fd5475c4d-9bkzd
+```
+![configmapapplication로그](https://user-images.githubusercontent.com/53825723/131068733-3eed09a3-0af2-422a-a77d-67c6312b0647.JPG)
+
+
+* pod의 sh에서 환경변수 확인
+```
+kubectl exec myreservation-5fd5475c4d-9bkzd -it -- sh
+```
+![configmapcontainer로그](https://user-images.githubusercontent.com/53825723/131068737-668acff9-33cc-4716-af9c-23d33af33e0d.JPG)
 
 ## Deploy / Pipeline
 
