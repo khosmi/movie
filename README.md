@@ -978,7 +978,6 @@ cd ..
 
 
 * deployment.yml  참고
-```
 
 ![image](https://user-images.githubusercontent.com/86760528/131059850-1c47652c-72d2-413b-9e6d-3733d519c1e5.png)
 
