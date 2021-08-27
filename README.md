@@ -511,13 +511,14 @@ Materialized View를 구현하여, 타 마이크로서비스의 데이터 원본
 # 폴리글랏
 Order 서비스의 DB와 MyPage의 DB를 다른 DB를 사용하여 폴리글랏을 만족시키고 있다.
 
-**Order의 pom.xml DB 설정 코드**
+**Reservation의 pom.xml DB 설정 코드**
 
-![증빙5](https://github.com/bigot93/forthcafe/blob/main/images/db_conf1.png)
+![image](https://user-images.githubusercontent.com/86760622/131057448-457e2423-f202-4582-b820-65c4d21e4b68.png)
 
-**MyPage의 pom.xml DB 설정 코드**
+**MyReservation의 pom.xml DB 설정 코드**
 
-![증빙6](https://github.com/bigot93/forthcafe/blob/main/images/db_conf2.png)
+![image](https://user-images.githubusercontent.com/86760622/131057400-b019383d-5444-4256-8f8f-9002d5eca14f.png)
+
 
 # 동기식 호출 과 Fallback 처리
 
