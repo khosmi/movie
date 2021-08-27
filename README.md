@@ -726,8 +726,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.util.Date;
 
-@FeignClient(name="Pay", url="${api.url.pay}")  // Pay Service URL 변수화 
-//@FeignClient(name="Pay", url="${api.url.pay}", fallback=PayServiceImpl.class)  // FALLBAK 설정
+//@FeignClient(name="Pay", url="${api.url.pay}")  // Pay Service URL 변수화 
+@FeignClient(name="Pay", url="${api.url.pay}", fallback=PayServiceImpl.class)  // FALLBAK 설정
 public interface PayService {
     @RequestMapping(method= RequestMethod.GET, path="/pays")
     public void pay(@RequestBody Pay pay);
@@ -766,12 +766,8 @@ public class PayServiceImpl implements PayService {
 
 ```
 
-![image](https://user-images.githubusercontent.com/5147735/109755775-f9b7ae80-7c29-11eb-8add-bdb295dc94e1.png)
-![image](https://user-images.githubusercontent.com/5147735/109755797-04724380-7c2a-11eb-8fcd-1c5135000ee5.png)
-
-
-Fallback 결과(Pay service 종료 후 Order 추가 시)
-![image](https://user-images.githubusercontent.com/5147735/109755716-dab91c80-7c29-11eb-9099-ba585115a2a6.png)
+Fallback 결과(Pay service 종료 후 예약실행 추가 시)
+![image](https://user-images.githubusercontent.com/86760622/131062766-99148589-21f6-4817-8fdd-331620f49e40.png)
 
 # 운영
 
