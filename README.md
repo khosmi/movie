@@ -787,98 +787,62 @@ kubectl logs {pod ID}
 
 ## Deploy / Pipeline
 
-* build 하기
-```
-cd /forthcafe
-
-cd Order
-mvn package 
-
-cd ..
-cd Pay
-mvn package
-
-cd ..
-cd Delivery
-mvn package
-
-cd ..
-cd gateway
-mvn package
-
-cd ..
-cd MyPage
-mvn package
-```
-
 * Azure 레지스트리에 도커 이미지 push, deploy, 서비스생성(방법1 : yml파일 이용한 deploy)
 ```
-cd .. 
-cd Order
-az acr build --registry skteam01 --image skteam01.azurecr.io/order:v1 .
-kubectl apply -f kubernetes/deployment.yml 
-kubectl expose deploy order --type=ClusterIP --port=8080
-
-cd .. 
 cd Pay
-az acr build --registry skteam01 --image skteam01.azurecr.io/pay:v1 .
-kubectl apply -f kubernetes/deployment.yml 
-kubectl expose deploy pay --type=ClusterIP --port=8080
-
-cd .. 
-cd Delivery
-az acr build --registry skteam01 --image skteam01.azurecr.io/delivery:v1 .
-kubectl apply -f kubernetes/deployment.yml 
-kubectl expose deploy delivery --type=ClusterIP --port=8080
-
-
-cd .. 
-cd MyPage
-az acr build --registry skteam01 --image skteam01.azurecr.io/mypage:v1 .
-kubectl apply -f kubernetes/deployment.yml 
-kubectl expose deploy mypage --type=ClusterIP --port=8080
-
-cd .. 
-cd gateway
-az acr build --registry skteam01 --image skteam01.azurecr.io/gateway:v1 .
-kubectl create deploy gateway --image=skteam01.azurecr.io/gateway:v1
-kubectl expose deploy gateway --type=LoadBalancer --port=8080
-```
-
-
-* Azure 레지스트리에 도커 이미지 push, deploy, 서비스생성(방법2)
-```
+# jar 파일 생성
+mvn package
+# 이미지 빌드
+docker build -t user1919.azurecr.io/pay .
+# acr에 이미지 푸시
+docker push user1919.azurecr.io/pay
+# kubernetes에 service, deployment 배포
+kubectl apply -f kubernetes
 cd ..
-cd Order
-az acr build --registry skteam01 --image skteam01.azurecr.io/order:v1 .
-kubectl create deploy order --image=skteam01.azurecr.io/order:v1
-kubectl expose deploy order --type=ClusterIP --port=8080
 
-cd .. 
-cd Pay
-az acr build --registry skteam01 --image skteam01.azurecr.io/pay:v1 .
-kubectl create deploy pay --image=skteam01.azurecr.io/pay:v1
-kubectl expose deploy pay --type=ClusterIP --port=8080
+cd Reservation
+# jar 파일 생성
+mvn package
+# 이미지 빌드
+docker build -t user1919.azurecr.io/reservation .
+# acr에 이미지 푸시
+docker push user1919.azurecr.io/reservation
+# kubernetes에 service, deployment 배포
+kubectl apply -f kubernetes
+cd ..
 
+cd Ticket
+# jar 파일 생성
+mvn package
+# 이미지 빌드
+docker build -t user1919.azurecr.io/ticket .
+# acr에 이미지 푸시
+docker push user1919.azurecr.io/ticket
+# kubernetes에 service, deployment 배포
+kubectl apply -f kubernetes
+cd ..
 
-cd .. 
-cd Delivery
-az acr build --registry skteam01 --image skteam01.azurecr.io/delivery:v1 .
-kubectl create deploy delivery --image=skteam01.azurecr.io/delivery:v1
-kubectl expose deploy delivery --type=ClusterIP --port=8080
-
-
-cd .. 
 cd gateway
-az acr build --registry skteam01 --image skteam01.azurecr.io/gateway:v1 .
-kubectl create deploy gateway --image=skteam01.azurecr.io/gateway:v1
+# jar 파일 생성
+mvn package
+# 이미지 빌드
+docker build -t user1919.azurecr.io/gateway .
+# acr에 이미지 푸시
+docker push user1919.azurecr.io/gateway
+# kubernetes에 service, deployment 배포
+kubectl create deploy gateway --image=user1919.azurecr.io/gateway
 kubectl expose deploy gateway --type=LoadBalancer --port=8080
+cd ..
 
-cd .. 
-cd MyPage
-az acr build --registry skteam01 --image skteam01.azurecr.io/mypage:v1 .
-kubectl create deploy mypage --image=skteam01.azurecr.io/mypage:v1
-kubectl expose deploy mypage --type=ClusterIP --port=8080
+cd MyReservation
+# jar 파일 생성
+mvn package
+# 이미지 빌드
+docker build -t user1919.azurecr.io/myreservation .
+# acr에 이미지 푸시
+docker push user1919.azurecr.io/myreservation
+# kubernetes에 service, deployment 배포
+kubectl apply -f kubernetes
 
 kubectl logs {pod명}
 ```
