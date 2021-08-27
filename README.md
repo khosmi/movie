@@ -845,6 +845,10 @@ kubectl logs {pod ID}
 
 * Azure 레지스트리에 도커 이미지 push, deploy, 서비스생성(yml파일 이용한 deploy)
 ```
+# 각 마이크로 서비스의 deployment에서 이미지 수정 필요
+# label과 이미지 이름 소문자로 변경 필요
+
+
 cd Pay
 # jar 파일 생성
 mvn package
@@ -854,6 +858,10 @@ docker build -t user1919.azurecr.io/pay .
 docker push user1919.azurecr.io/pay
 # kubernetes에 service, deployment 배포
 kubectl apply -f kubernetes
+# Pod 재배포 
+# Deployment가 변경되어야 새로운 이미지로 Pod를 실행한다.
+# Deployment가 변경되지 않아도 새로운 Image로 Pod 실행하기 위함
+kubectl rollout restart deployment pay  
 cd ..
 
 cd Reservation
@@ -865,6 +873,10 @@ docker build -t user1919.azurecr.io/reservation .
 docker push user1919.azurecr.io/reservation
 # kubernetes에 service, deployment 배포
 kubectl apply -f kubernetes
+# Pod 재배포 
+# Deployment가 변경되어야 새로운 이미지로 Pod를 실행한다.
+# Deployment가 변경되지 않아도 새로운 Image로 Pod 실행하기 위함
+kubectl rollout restart deployment reservation  
 cd ..
 
 cd Ticket
@@ -876,6 +888,10 @@ docker build -t user1919.azurecr.io/ticket .
 docker push user1919.azurecr.io/ticket
 # kubernetes에 service, deployment 배포
 kubectl apply -f kubernetes
+# Pod 재배포
+# Deployment가 변경되어야 새로운 이미지로 Pod를 실행한다.
+# Deployment가 변경되지 않아도 새로운 Image로 Pod 실행하기 위함
+kubectl rollout restart deployment ticket  
 cd ..
 
 cd gateway
@@ -886,8 +902,10 @@ docker build -t user1919.azurecr.io/gateway .
 # acr에 이미지 푸시
 docker push user1919.azurecr.io/gateway
 # kubernetes에 service, deployment 배포
-kubectl create deploy gateway --image=user1919.azurecr.io/gateway
-kubectl expose deploy gateway --type=LoadBalancer --port=8080
+kubectl create deploy gateway --image=user1919.azurecr.io/gateway   
+kubectl expose deploy gateway --type=LoadBalancer --port=8080 
+
+kubectl rollout restart deployment gateway
 cd ..
 
 cd MyReservation
@@ -899,6 +917,11 @@ docker build -t user1919.azurecr.io/myreservation .
 docker push user1919.azurecr.io/myreservation
 # kubernetes에 service, deployment 배포
 kubectl apply -f kubernetes
+# Pod 재배포
+# Deployment가 변경되어야 새로운 이미지로 Pod를 실행한다.
+# Deployment가 변경되지 않아도 새로운 Image로 Pod 실행하기 위함
+kubectl rollout restart deployment myreservation  
+cd ..
 
 ```
 * Service, Pod, Deploy 상태 확인
@@ -916,6 +939,37 @@ kubectl apply -f kubernetes
 ```
 
 ![image](https://user-images.githubusercontent.com/86760528/131059850-1c47652c-72d2-413b-9e6d-3733d519c1e5.png)
+
+
+### 수정 반영
+* gateway의 `/acuator/env`는 기본적으로 자단된다.
+```
+http 20.200.200.132:8080/actuator/env
+```
+![변경 전](https://user-images.githubusercontent.com/53825723/131063296-ff43e4f5-2a08-4c29-a53e-78dce60af7ca.JPG)
+
+* application.yaml에서 `/acuator/env`를 허용하도록 수정한다.
+```yaml
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+```
+
+* 스크립트 실핼
+![파이프라인 실행](https://user-images.githubusercontent.com/53825723/131064003-6fb6d07a-1eaa-4e77-a49b-fc4bb4b52b3b.JPG)
+* Pod 확인
+```
+kubectl get pod
+```
+![pod restart](https://user-images.githubusercontent.com/53825723/131063803-f024720c-341a-4dc3-916a-62ffb3a221e9.JPG)
+
+* 수정 내용이 반영되어 `/acuator/env`가 허용된다.
+```
+http 20.200.200.132:8080/actuator/env
+```
+![변경 후](https://user-images.githubusercontent.com/53825723/131063298-e4a1bea1-28ca-4b69-afe4-198302d8c387.JPG)
 
 ## 서킷 브레이킹
 * 서킷 브레이킹 프레임워크의 선택: Spring FeignClient + Hystrix 옵션을 사용하여 구현함
