@@ -1038,29 +1038,27 @@ siege -c100 -t30S  -v --content-type "application/json" 'http://52.141.61.164:80
 ## 오토스케일 아웃
 * 앞서 서킷 브레이커(CB) 는 시스템을 안정되게 운영할 수 있게 해줬지만 사용자의 요청을 100% 받아들여주지 못했기 때문에 이에 대한 보완책으로 자동화된 확장 기능을 적용하고자 한다.
 
-* order 서비스 deployment.yml 설정
+*  myReservation 서비스 deployment.yml 설정
 ```
- resources:
+        resources:
             limits:
               cpu: 500m
             requests:
               cpu: 200m
 ```
-* 다시 배포해준다.
-```
-/home/project/team/forthcafe/Order/mvn package
-az acr build --registry skteam01 --image skteam01.azurecr.io/order:v1 .
-kubectl apply -f kubernetes/deployment.yml 
-kubectl expose deploy order --type=ClusterIP --port=8080
-```
+* 스크립트를 실행하여 다시 배포해준다.
 
 * Order 서비스에 대한 replica 를 동적으로 늘려주도록 HPA 를 설정한다. 설정은 CPU 사용량이 15프로를 넘어서면 replica 를 10개까지 늘려준다
 
 ```
-kubectl autoscale deploy order --min=1 --max=10 --cpu-percent=15
+kubectl autoscale deployment myreservation --cpu-percent=15 --min=1 --max=10
 ```
+```
+kubectl get hpa
+```
+![hpa적용확인](https://user-images.githubusercontent.com/53825723/131067613-81203ccb-1325-4af8-bcc3-aeea62990a70.JPG)
 
-* /home/project/team/forthcafe/yaml/siege.yaml
+* siege.yaml
 ```
 apiVersion: v1
 kind: Pod
@@ -1074,27 +1072,35 @@ spec:
 
 * siege pod 생성
 ```
-/home/project/team/forthcafe/yaml/kubectl apply -f siege.yaml
+kubectl apply -f siege.yaml
 ```
+
 
 * siege를 활용해서 워크로드를 1000명, 1분간 걸어준다. (Cloud 내 siege pod에서 부하줄 것)
 ```
 kubectl exec -it pod/siege -c siege -- /bin/bash
-siege -c1000 -t60S  -v --content-type "application/json" 'http://{EXTERNAL-IP}:8080/orders POST {"memuId":2, "quantity":1}'
-siege -c1000 -t60S  -v --content-type "application/json" 'http://52.141.61.164:8080/orders POST {"memuId":2, "quantity":1}'
+siege -c1000 -t60S  -v http://myreservation:8080/myReservations
 ```
 
 * 오토스케일이 어떻게 되고 있는지 모니터링을 걸어둔다
 ```
-kubectl get deploy order -w
+kubectl get deploy myreservation -w
 ```
-![image](https://user-images.githubusercontent.com/5147735/109771563-4c9c6080-7c40-11eb-9bf8-1efef17bedee.png)
+![hpaDelploy수변경전](https://user-images.githubusercontent.com/53825723/131067624-43570d7e-354a-43fe-871b-cc7a8604b1b7.JPG)
 ```
-kubectl get pod
+ watch kubectl get pod
 ```
-![image](https://user-images.githubusercontent.com/5147735/109771259-f3ccc800-7c3f-11eb-8ebe-9ff4ab9c2242.png)
+![hpaPod수변경전](https://user-images.githubusercontent.com/53825723/131067628-d6870772-3008-4dde-80ec-2c471e29eb2d.JPG)
 
-
+* 오토스케일 결과
+```
+kubectl get deploy myreservation -w
+```
+![hpaDelploy수변경후](https://user-images.githubusercontent.com/53825723/131067792-e708da59-817b-4d6c-b27f-e7b0e2b26d1a.JPG)
+```
+ watch kubectl get pod
+```
+![hpaPod수변경후](https://user-images.githubusercontent.com/53825723/131067798-ceb2bd23-69e5-4d2f-835d-c8e80fc2bfe3.JPG)
 
 
 ## 무정지 재배포 (Readiness Probe)
