@@ -979,12 +979,6 @@ cd ..
 
 * deployment.yml  참고
 ```
-1. image 설정
-2. env 설정 (config Map) 
-3. readiness 설정 (무정지 배포)
-4. liveness 설정 (self-healing)
-5. resource 설정 (autoscaling)
-```
 
 ![image](https://user-images.githubusercontent.com/86760528/131059850-1c47652c-72d2-413b-9e6d-3733d519c1e5.png)
 
