@@ -674,7 +674,7 @@ Reservation 서비스의 DB와 MyReservation의 DB를 다른 DB를 사용하여 
 분석단계에서의 조건 중 하나로 예약(Reservation)와 결제(Pay)간의 호출은 동기식 일관성을 유지하는 트랜잭션으로 처리하기로 하였다. 
 호출 프로토콜은 Rest Repository에 의해 노출되어있는 REST 서비스를 FeignClient를 이용하여 호출하도록 한다.
 
-**Reservation 서비스 내 external.PayService**
+**Reservation 서비스 내 external.PayService.java**
 ```java
 package movie.external;
 
@@ -686,7 +686,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.util.Date;
 
-@FeignClient(name="Pay", url="${api.url.pay}", fallback=PayServiceImpl.class)  // Pay Service URL 변수화 
+@FeignClient(name="Pay", url="${api.url.pay}")  // Pay Service URL 변수화 
 public interface PayService {
     @RequestMapping(method= RequestMethod.GET, path="/pays")
     public void pay(@RequestBody Pay pay);
@@ -697,19 +697,75 @@ public interface PayService {
 
 **동작 확인**
 
-잠시 Pay 서비스 중지
-![증빙7](https://github.com/bigot93/forthcafe/blob/main/images/%EB%8F%99%EA%B8%B0%ED%99%941.png)
+Pay 서비스 중지함
+![image](https://user-images.githubusercontent.com/86760622/131061678-fec8d91c-e3a8-413b-960b-9f904c5f604c.png)
 
-주문 취소 요청시 Pay 서비스 변화 없음
-![증빙8](https://github.com/bigot93/forthcafe/blob/main/images/%EB%8F%99%EA%B8%B0%ED%99%942.png)
 
-Delivery 서비스 재기동 후 주문취소
-![증빙9](https://github.com/bigot93/forthcafe/blob/main/images/%EB%8F%99%EA%B8%B0%ED%99%943.png)
+예약시 Pay서비스 중지로 인해 예약 실패
+![image](https://user-images.githubusercontent.com/86760622/131061604-77f5654c-23e4-4414-9224-d9e439ae3a32.png)
 
-Pay 서비스 상태를 보면 2번 주문 정상 취소 처리됨
-![증빙9](https://github.com/bigot93/forthcafe/blob/main/images/%EB%8F%99%EA%B8%B0%ED%99%944.png)
 
-Fallback 설정
+Pay 서비스 재기동 후 예약 성공함
+![image](https://user-images.githubusercontent.com/86760622/131062000-cdcbb6b1-790c-4809-9ba9-d995202b45ff.png)
+
+
+Pay 서비스 조회시 정상적으로 예약정복다 등록됨
+![image](https://user-images.githubusercontent.com/86760622/131062120-8f310731-85b6-46c0-bdd6-caa6a22e2b09.png)
+
+Fallback 설정 
+- external.PayService.java
+```java
+
+package movie.external;
+
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+import java.util.Date;
+
+@FeignClient(name="Pay", url="${api.url.pay}")  // Pay Service URL 변수화 
+//@FeignClient(name="Pay", url="${api.url.pay}", fallback=PayServiceImpl.class)  // FALLBAK 설정
+public interface PayService {
+    @RequestMapping(method= RequestMethod.GET, path="/pays")
+    public void pay(@RequestBody Pay pay);
+
+}
+
+```
+- external.PayServiceImpl.java
+```java
+package movie.external;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.Optional;
+
+
+@Service
+public class PayServiceImpl implements PayService {
+    
+    public void pay(Pay pay) {
+        System.out.println("@@@@@@@결제 서비스 지연중 입니다. @@@@@@@@@@@@");
+        System.out.println("@@@@@@@결제 서비스 지연중 입니다. @@@@@@@@@@@@");
+        System.out.println("@@@@@@@결제 서비스 지연중 입니다. @@@@@@@@@@@@");
+        System.out.println("@@@@@@@결제 서비스 지연중 입니다. @@@@@@@@@@@@");
+        System.out.println("@@@@@@@결제 서비스 지연중 입니다. @@@@@@@@@@@@");
+        System.out.println("@@@@@@@결제 서비스 지연중 입니다. @@@@@@@@@@@@");
+        System.out.println("@@@@@@@결제 서비스 지연중 입니다. @@@@@@@@@@@@");
+        System.out.println("@@@@@@@결제 서비스 지연중 입니다. @@@@@@@@@@@@");
+        System.out.println("@@@@@@@결제 서비스 지연중 입니다. @@@@@@@@@@@@");
+
+    }
+
+}
+
+
+```
+
 ![image](https://user-images.githubusercontent.com/5147735/109755775-f9b7ae80-7c29-11eb-8add-bdb295dc94e1.png)
 ![image](https://user-images.githubusercontent.com/5147735/109755797-04724380-7c2a-11eb-8fcd-1c5135000ee5.png)
 
