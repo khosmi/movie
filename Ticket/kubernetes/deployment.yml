@@ -16,7 +16,8 @@ spec:
     spec:
       containers:
         - name: ticket
-          image: username/Ticket:latest
+          image: user1919.azurecr.io/ticket:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           readinessProbe:

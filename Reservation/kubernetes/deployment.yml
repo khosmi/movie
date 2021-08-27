@@ -16,7 +16,8 @@ spec:
     spec:
       containers:
         - name: reservation
-          image: username/Reservation:latest
+          image: user1919.azurecr.io/reservation:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           readinessProbe:

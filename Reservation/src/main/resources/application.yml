@@ -86,7 +86,7 @@ spring:
 
 api:
   url:
-    pay: http://Pay:8082
+    pay: http://pay:8080
 
 
 # circuit breaker 설정 start
