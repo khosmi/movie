@@ -629,7 +629,8 @@ spring:
 
 
 # CQRS/saga/correlation
-Materialized View를 구현하여, 타 마이크로서비스의 데이터 원본에 접근없이(Composite 서비스나 조인SQL 등 없이)도 내 서비스의 화면 구성과 잦은 조회가 가능하게 구현해 두었다. 본 프로젝트에서 View 역할은 MyPages 서비스가 수행한다.
+Materialized View를 구현하여, 타 마이크로서비스의 데이터 원본에 접근없이(Composite 서비스나 조인SQL 등 없이)도 내 서비스의 화면 구성과 잦은 조회가 가능하게 구현해 두었다. 
+본 프로젝트에서 View 역할은 MyReservation 서비스가 수행한다.
 
 예약 실행 후 MyReservation 화면
 
@@ -648,11 +649,11 @@ Materialized View를 구현하여, 타 마이크로서비스의 데이터 원본
 ![image](https://user-images.githubusercontent.com/86760622/130897740-f379f06e-3906-423c-bdb7-21fdb80acceb.png)
 
 
-위와 같이 주문을 하게되면 Order > Pay > Delivery > MyPage로 주문이 Assigned 되고
+위와 같이 예약을 하게되면 Reservation > Pay > Ticket > MyReservation로 예약이 Assigned 되고
 
-주문 취소가 되면 Status가 deliveryCancelled로 Update 되는 것을 볼 수 있다.
+예약 취소가 되면 Status가 Cancelled Reservation로 Update 되는 것을 볼 수 있다.
 
-또한 Correlation을 Key를 활용하여 Id를 Key값을 하고 원하는 주문하고 서비스간의 공유가 이루어 졌다.
+또한 Correlation을 Key를 활용하여 Id를 Key값을 하고 원하는 예약하고 서비스간의 공유가 이루어 졌다.
 
 위 결과로 서로 다른 마이크로 서비스 간에 트랜잭션이 묶여 있음을 알 수 있다.
 
@@ -670,26 +671,28 @@ Order 서비스의 DB와 MyPage의 DB를 다른 DB를 사용하여 폴리글랏�
 
 # 동기식 호출 과 Fallback 처리
 
-분석단계에서의 조건 중 하나로 결재(Pay)와 배송(Delivery) 간의 호출은 동기식 일관성을 유지하는 트랜잭션으로 처리하기로 하였다. 호출 프로토콜은 Rest Repository에 의해 노출되어있는 REST 서비스를 FeignClient를 이용하여 호출하도록 한다.
+분석단계에서의 조건 중 하나로 예약(Reservation)와 결제(Pay)간의 호출은 동기식 일관성을 유지하는 트랜잭션으로 처리하기로 하였다. 
+호출 프로토콜은 Rest Repository에 의해 노출되어있는 REST 서비스를 FeignClient를 이용하여 호출하도록 한다.
 
-**Pay 서비스 내 external.DeliveryService**
+**Reservation 서비스 내 external.DeliveryService**
 ```java
-package forthcafe.external;
+package movie.external;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.util.Date;
 
-@FeignClient(name="Delivery", url="${api.url.delivery}") 
-public interface DeliveryService {
-
-    @RequestMapping(method = RequestMethod.POST, path = "/deliveries", consumes = "application/json")
-    public void delivery(@RequestBody Delivery delivery);
+@FeignClient(name="Pay", url="${api.url.pay}", fallback=PayServiceImpl.class)  // Pay Service URL 변수화 
+public interface PayService {
+    @RequestMapping(method= RequestMethod.GET, path="/pays")
+    public void pay(@RequestBody Pay pay);
 
 }
+
 ```
 
 **동작 확인**
@@ -787,63 +790,100 @@ kubectl logs {pod ID}
 
 ## Deploy / Pipeline
 
+* build 하기
+```
+cd /forthcafe
+
+cd Order
+mvn package 
+
+cd ..
+cd Pay
+mvn package
+
+cd ..
+cd Delivery
+mvn package
+
+cd ..
+cd gateway
+mvn package
+
+cd ..
+cd MyPage
+mvn package
+```
+
 * Azure 레지스트리에 도커 이미지 push, deploy, 서비스생성(방법1 : yml파일 이용한 deploy)
 ```
+cd .. 
+cd Order
+az acr build --registry skteam01 --image skteam01.azurecr.io/order:v1 .
+kubectl apply -f kubernetes/deployment.yml 
+kubectl expose deploy order --type=ClusterIP --port=8080
+
+cd .. 
 cd Pay
-# jar 파일 생성
-mvn package
-# 이미지 빌드
-docker build -t user1919.azurecr.io/pay .
-# acr에 이미지 푸시
-docker push user1919.azurecr.io/pay
-# kubernetes에 service, deployment 배포
-kubectl apply -f kubernetes
-cd ..
+az acr build --registry skteam01 --image skteam01.azurecr.io/pay:v1 .
+kubectl apply -f kubernetes/deployment.yml 
+kubectl expose deploy pay --type=ClusterIP --port=8080
 
-cd Reservation
-# jar 파일 생성
-mvn package
-# 이미지 빌드
-docker build -t user1919.azurecr.io/reservation .
-# acr에 이미지 푸시
-docker push user1919.azurecr.io/reservation
-# kubernetes에 service, deployment 배포
-kubectl apply -f kubernetes
-cd ..
+cd .. 
+cd Delivery
+az acr build --registry skteam01 --image skteam01.azurecr.io/delivery:v1 .
+kubectl apply -f kubernetes/deployment.yml 
+kubectl expose deploy delivery --type=ClusterIP --port=8080
 
-cd Ticket
-# jar 파일 생성
-mvn package
-# 이미지 빌드
-docker build -t user1919.azurecr.io/ticket .
-# acr에 이미지 푸시
-docker push user1919.azurecr.io/ticket
-# kubernetes에 service, deployment 배포
-kubectl apply -f kubernetes
-cd ..
 
+cd .. 
+cd MyPage
+az acr build --registry skteam01 --image skteam01.azurecr.io/mypage:v1 .
+kubectl apply -f kubernetes/deployment.yml 
+kubectl expose deploy mypage --type=ClusterIP --port=8080
+
+cd .. 
 cd gateway
-# jar 파일 생성
-mvn package
-# 이미지 빌드
-docker build -t user1919.azurecr.io/gateway .
-# acr에 이미지 푸시
-docker push user1919.azurecr.io/gateway
-# kubernetes에 service, deployment 배포
-kubectl create deploy gateway --image=user1919.azurecr.io/gateway
+az acr build --registry skteam01 --image skteam01.azurecr.io/gateway:v1 .
+kubectl create deploy gateway --image=skteam01.azurecr.io/gateway:v1
 kubectl expose deploy gateway --type=LoadBalancer --port=8080
+```
+
+
+* Azure 레지스트리에 도커 이미지 push, deploy, 서비스생성(방법2)
+```
 cd ..
+cd Order
+az acr build --registry skteam01 --image skteam01.azurecr.io/order:v1 .
+kubectl create deploy order --image=skteam01.azurecr.io/order:v1
+kubectl expose deploy order --type=ClusterIP --port=8080
 
-cd MyReservation
-# jar 파일 생성
-mvn package
-# 이미지 빌드
-docker build -t user1919.azurecr.io/myreservation .
-# acr에 이미지 푸시
-docker push user1919.azurecr.io/myreservation
-# kubernetes에 service, deployment 배포
-kubectl apply -f kubernetes
+cd .. 
+cd Pay
+az acr build --registry skteam01 --image skteam01.azurecr.io/pay:v1 .
+kubectl create deploy pay --image=skteam01.azurecr.io/pay:v1
+kubectl expose deploy pay --type=ClusterIP --port=8080
 
+
+cd .. 
+cd Delivery
+az acr build --registry skteam01 --image skteam01.azurecr.io/delivery:v1 .
+kubectl create deploy delivery --image=skteam01.azurecr.io/delivery:v1
+kubectl expose deploy delivery --type=ClusterIP --port=8080
+
+
+cd .. 
+cd gateway
+az acr build --registry skteam01 --image skteam01.azurecr.io/gateway:v1 .
+kubectl create deploy gateway --image=skteam01.azurecr.io/gateway:v1
+kubectl expose deploy gateway --type=LoadBalancer --port=8080
+
+cd .. 
+cd MyPage
+az acr build --registry skteam01 --image skteam01.azurecr.io/mypage:v1 .
+kubectl create deploy mypage --image=skteam01.azurecr.io/mypage:v1
+kubectl expose deploy mypage --type=ClusterIP --port=8080
+
+kubectl logs {pod명}
 ```
 * Service, Pod, Deploy 상태 확인
 ![image](https://user-images.githubusercontent.com/5147735/109769165-2de89a80-7c3d-11eb-8472-2281468fb771.png)
