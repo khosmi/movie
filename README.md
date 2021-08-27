@@ -709,7 +709,8 @@ Pay 서비스 재기동 후 예약 성공함
 ![image](https://user-images.githubusercontent.com/86760622/131062000-cdcbb6b1-790c-4809-9ba9-d995202b45ff.png)
 
 
-Pay 서비스 조회시 정상적으로 예약정복다 등록됨
+Pay 서비스 조회시 정상적으로 예약정보가 등록됨
+
 ![image](https://user-images.githubusercontent.com/86760622/131062120-8f310731-85b6-46c0-bdd6-caa6a22e2b09.png)
 
 Fallback 설정 
