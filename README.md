@@ -790,103 +790,66 @@ kubectl logs {pod ID}
 
 ## Deploy / Pipeline
 
-* build 하기
+* Azure 레지스트리에 도커 이미지 push, deploy, 서비스생성(yml파일 이용한 deploy)
 ```
-cd /forthcafe
-
-cd Order
-mvn package 
-
-cd ..
 cd Pay
+# jar 파일 생성
 mvn package
-
+# 이미지 빌드
+docker build -t user1919.azurecr.io/pay .
+# acr에 이미지 푸시
+docker push user1919.azurecr.io/pay
+# kubernetes에 service, deployment 배포
+kubectl apply -f kubernetes
 cd ..
-cd Delivery
+
+cd Reservation
+# jar 파일 생성
 mvn package
-
+# 이미지 빌드
+docker build -t user1919.azurecr.io/reservation .
+# acr에 이미지 푸시
+docker push user1919.azurecr.io/reservation
+# kubernetes에 service, deployment 배포
+kubectl apply -f kubernetes
 cd ..
+
+cd Ticket
+# jar 파일 생성
+mvn package
+# 이미지 빌드
+docker build -t user1919.azurecr.io/ticket .
+# acr에 이미지 푸시
+docker push user1919.azurecr.io/ticket
+# kubernetes에 service, deployment 배포
+kubectl apply -f kubernetes
+cd ..
+
 cd gateway
+# jar 파일 생성
 mvn package
-
-cd ..
-cd MyPage
-mvn package
-```
-
-* Azure 레지스트리에 도커 이미지 push, deploy, 서비스생성(방법1 : yml파일 이용한 deploy)
-```
-cd .. 
-cd Order
-az acr build --registry skteam01 --image skteam01.azurecr.io/order:v1 .
-kubectl apply -f kubernetes/deployment.yml 
-kubectl expose deploy order --type=ClusterIP --port=8080
-
-cd .. 
-cd Pay
-az acr build --registry skteam01 --image skteam01.azurecr.io/pay:v1 .
-kubectl apply -f kubernetes/deployment.yml 
-kubectl expose deploy pay --type=ClusterIP --port=8080
-
-cd .. 
-cd Delivery
-az acr build --registry skteam01 --image skteam01.azurecr.io/delivery:v1 .
-kubectl apply -f kubernetes/deployment.yml 
-kubectl expose deploy delivery --type=ClusterIP --port=8080
-
-
-cd .. 
-cd MyPage
-az acr build --registry skteam01 --image skteam01.azurecr.io/mypage:v1 .
-kubectl apply -f kubernetes/deployment.yml 
-kubectl expose deploy mypage --type=ClusterIP --port=8080
-
-cd .. 
-cd gateway
-az acr build --registry skteam01 --image skteam01.azurecr.io/gateway:v1 .
-kubectl create deploy gateway --image=skteam01.azurecr.io/gateway:v1
+# 이미지 빌드
+docker build -t user1919.azurecr.io/gateway .
+# acr에 이미지 푸시
+docker push user1919.azurecr.io/gateway
+# kubernetes에 service, deployment 배포
+kubectl create deploy gateway --image=user1919.azurecr.io/gateway
 kubectl expose deploy gateway --type=LoadBalancer --port=8080
-```
-
-
-* Azure 레지스트리에 도커 이미지 push, deploy, 서비스생성(방법2)
-```
 cd ..
-cd Order
-az acr build --registry skteam01 --image skteam01.azurecr.io/order:v1 .
-kubectl create deploy order --image=skteam01.azurecr.io/order:v1
-kubectl expose deploy order --type=ClusterIP --port=8080
 
-cd .. 
-cd Pay
-az acr build --registry skteam01 --image skteam01.azurecr.io/pay:v1 .
-kubectl create deploy pay --image=skteam01.azurecr.io/pay:v1
-kubectl expose deploy pay --type=ClusterIP --port=8080
+cd MyReservation
+# jar 파일 생성
+mvn package
+# 이미지 빌드
+docker build -t user1919.azurecr.io/myreservation .
+# acr에 이미지 푸시
+docker push user1919.azurecr.io/myreservation
+# kubernetes에 service, deployment 배포
+kubectl apply -f kubernetes
 
-
-cd .. 
-cd Delivery
-az acr build --registry skteam01 --image skteam01.azurecr.io/delivery:v1 .
-kubectl create deploy delivery --image=skteam01.azurecr.io/delivery:v1
-kubectl expose deploy delivery --type=ClusterIP --port=8080
-
-
-cd .. 
-cd gateway
-az acr build --registry skteam01 --image skteam01.azurecr.io/gateway:v1 .
-kubectl create deploy gateway --image=skteam01.azurecr.io/gateway:v1
-kubectl expose deploy gateway --type=LoadBalancer --port=8080
-
-cd .. 
-cd MyPage
-az acr build --registry skteam01 --image skteam01.azurecr.io/mypage:v1 .
-kubectl create deploy mypage --image=skteam01.azurecr.io/mypage:v1
-kubectl expose deploy mypage --type=ClusterIP --port=8080
-
-kubectl logs {pod명}
 ```
 * Service, Pod, Deploy 상태 확인
-![image](https://user-images.githubusercontent.com/5147735/109769165-2de89a80-7c3d-11eb-8472-2281468fb771.png)
+![image](https://user-images.githubusercontent.com/86760528/131059867-8d387dc1-bac2-4d68-972b-1cc1d0629d78.png)
 
 
 * deployment.yml  참고
@@ -898,7 +861,7 @@ kubectl logs {pod명}
 5. resource 설정 (autoscaling)
 ```
 
-![image](https://user-images.githubusercontent.com/5147735/109643506-a8f77580-7b97-11eb-926b-e6c922aa2d1b.png)
+![image](https://user-images.githubusercontent.com/86760528/131059850-1c47652c-72d2-413b-9e6d-3733d519c1e5.png)
 
 ## 서킷 브레이킹
 * 서킷 브레이킹 프레임워크의 선택: Spring FeignClient + Hystrix 옵션을 사용하여 구현함
