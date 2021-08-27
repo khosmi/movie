@@ -844,7 +844,6 @@ docker push user1919.azurecr.io/myreservation
 # kubernetes에 service, deployment 배포
 kubectl apply -f kubernetes
 
-kubectl logs {pod명}
 ```
 * Service, Pod, Deploy 상태 확인
 ![image](https://user-images.githubusercontent.com/5147735/109769165-2de89a80-7c3d-11eb-8472-2281468fb771.png)
