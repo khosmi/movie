@@ -56,7 +56,9 @@ docker build -t user1919.azurecr.io/gateway .
 docker push user1919.azurecr.io/gateway
 # kubernetes에 service, deployment 배포
 kubectl create deploy gateway --image=user1919.azurecr.io/gateway   
-kubectl expose deploy gateway --type=LoadBalancer --port=8080   
+kubectl expose deploy gateway --type=LoadBalancer --port=8080 
+
+kubectl rollout restart deployment gateway
 cd ..
 
 cd MyReservation
