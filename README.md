@@ -1073,7 +1073,7 @@ kubectl exec -it pod/siege -c siege -- /bin/bash
 siege -c100 -t30S  -v --content-type "application/json" 'http://52.141.61.164:8080/orders POST {"movie":"ironman"}'
 ```
 ![image](https://user-images.githubusercontent.com/86760528/131079671-40199483-9c22-42fc-8fb3-0dbc8a52b183.png)
-![image](https://user-images.githubusercontent.com/86760528/131079325-b520ec04-5e58-4c77-b216-0e31b3de00f4.png)
+![image](https://user-images.githubusercontent.com/86760528/131079931-b61cd3fa-44ac-42ea-9624-c2fa7b32ff69.png)
 
 
 
